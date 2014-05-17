@@ -1,21 +1,28 @@
 #include <PID_v1.h>
 #include "Motor.h"
+#include "define.h"
 
+#define RED_LED 12
+#define NULL 0
 
-double dKp = 5; 
-double dKi = 0; 
+double dKp = 5;
+double dKi = 0;
 double dKd = 0;
+
+boolean Serial1IsOpen = false;
+
 
 Motor motor1(1, dKp, dKi, dKd, A0);
 Motor motor2(2, dKp, dKi, dKd, A1);
 
-enum state{
+
+enum state {
   INITIALIZATION,
   SIMULATION,
   CONFIGURATION
 };
 
-enum confstate{
+enum confstate {
   RECEPTION,
   SETSETPOINT,
   SETPID,
@@ -33,57 +40,82 @@ state State = INITIALIZATION;
 confstate cmd = RECEPTION;
 
 
-void setup() 
+void setup()
 {
   SerialUSB.begin(115200);
+  Serial1.begin(9600);
+  
+  motor1.writeSpeed(0);
+  motor1.stop();
+  motor2.writeSpeed(0);
+  motor2.stop();
+  SerialUSB.println("Welcome to the Car simulator command box ");
+  pinMode(RED_LED, OUTPUT);
 
-
+  digitalWrite(RED_LED, LOW);
   while(!SerialUSB.available());
-
+  motor1.writeSpeed(100);
+  motor2.writeSpeed(100);
 }
 
-void loop() 
+void loop()
 {
-  if (SerialUSB.available()>=4)
+  
+  
+SerialUSB.println(motor1.Setpoint);
+motor1.Setpoint = 3;
+motor1.writeSpeed(10);
+delay(1000);
+/*
+  if (SerialUSB.available())
   {
-    while(SerialUSB.available())
-    {
-      int FirstByte = SerialUSB.read();
-      int SecondByte = SerialUSB.read();
 
-      switch (FirstByte+SecondByte)
-      {
-      case 2 : 
-        {
-          State = SIMULATION;
+    SerialUSB.println("Welcome to the Car simulator command box ");
 
-          int Consigne1 = SerialUSB.read();
-          motor1.Setpoint = map(Consigne1, 0, 255, 65, 190);
-          int Consigne2 = SerialUSB.read();
-          motor2.Setpoint = map(Consigne2, 0, 255, 65, 190);
+  }
 
-          break;
-        }
+  digitalWrite(RED_LED, HIGH);
+  delay(1000);
+   if (SerialUSB.available()>=4)
+   {
+     while(SerialUSB.available())
+     {
+       int FirstByte = SerialUSB.read();
+       int SecondByte = SerialUSB.read();
 
-      case 4 :
-        State = CONFIGURATION;
-        configurationMode();
-        break;
+       switch (FirstByte+SecondByte)
+       {
+       case 2 :
+         {
+           State = SIMULATION;
 
-      default :
-        serialFlush();
-        break;
-      }
-    }
-  } 
+           int Consigne1 = SerialUSB.read();
+           //motor1.Setpoint = map(Consigne1, 0, 255, 65, 190);
+           int Consigne2 = SerialUSB.read();
+           //motor2.Setpoint = map(Consigne2, 0, 255, 65, 190);
 
-  motor1.update();
-  motor2.update();
+           break;
+         }
+
+       case 4 :
+         State = CONFIGURATION;
+         configurationMode();
+         break;
+
+       default :
+         serialFlush();
+         break;
+       }
+     }
+   }
+
+   //motor1.update();
+   //motor2.update();*/
 }
 
 void serialFlush()
 {
-  while(SerialUSB.available())
+  while (SerialUSB.available())
   {
     SerialUSB.read();
   }
@@ -92,68 +124,68 @@ void serialFlush()
 void configurationMode()
 {
   serialFlush();
-  while(State = CONFIGURATION)
+  while (State = CONFIGURATION)
   {
-    if (SerialUSB.available()>=2)
+    if (SerialUSB.available() >= 2)
     {
       int FB = SerialUSB.read();
       int SB = SerialUSB.read();
-      cmd = (confstate)((FB + SB)/2);
+      cmd = (confstate)((FB + SB) / 2);
       switch (cmd)
       {
-      case SETSETPOINT:
-        setpoint();
-        serialFlush();
-        break;
+        case SETSETPOINT:
+          setpoint();
+          serialFlush();
+          break;
 
-      case SETPID:
-        setPID();
-        serialFlush();
-        break;
+        case SETPID:
+          setPID();
+          serialFlush();
+          break;
 
-      case MEASURE:
-        startMeasure();
-        serialFlush();
-        break;
+        case MEASURE:
+          startMeasure();
+          serialFlush();
+          break;
 
-      case SETSAMPLETIME:
-        setSampleTime();
-        serialFlush();
-        break;
+        case SETSAMPLETIME:
+          setSampleTime();
+          serialFlush();
+          break;
 
-      case GETSAMPLETIME:
-        getSampleTime();
-        serialFlush();
-        break;
+        case GETSAMPLETIME:
+          getSampleTime();
+          serialFlush();
+          break;
 
-      case SETLIMITS:
+        case SETLIMITS:
 
-        serialFlush();
-        break;
+          serialFlush();
+          break;
 
-      case GETLIMITS:
+        case GETLIMITS:
 
-        serialFlush();
-        break;
+          serialFlush();
+          break;
 
-      case GETPID:
+        case GETPID:
 
-        serialFlush();
-        break;
+          serialFlush();
+          break;
 
-      case EXIT:
-        serialFlush();
-        State = SIMULATION;
-        break;
+        case EXIT:
+          serialFlush();
+          State = SIMULATION;
+          break;
 
-      default:    
-        serialFlush();
-        break;
+        default:
+          serialFlush();
+          break;
       }
     }
 
-    motor1.update(3);
-    motor2.update(3);
+    //motor1.update(3);
+    //motor2.update(3);
   }
 }
 
@@ -176,8 +208,8 @@ void setpoint()
     int Consigne1 = SerialUSB.read();
     int Consigne2 = SerialUSB.read();
 
-    motor1.update(Consigne1);
-    motor2.update(Consigne2);
+    //motor1.update(Consigne1);
+    //motor2.update(Consigne2);
 
   }
 }
@@ -186,7 +218,7 @@ void setpoint()
 // Function to get New PID settings from serial : values should be Kp1Ki1Kd1Kp2Kd2 each xxxx ==> x,xxx //
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void setPID()                                      
+void setPID()
 {
   int timeout = 0;
   while (SerialUSB.available() < 24 && timeout < 500) // while there is not 24 bytes in RX buffer we wait, timeout value is 500ms
@@ -197,21 +229,21 @@ void setPID()
 
   if (timeout < 500)
   {
-    double Kp = (double)(((byte)SerialUSB.read()-48)+((byte)SerialUSB.read()-48)/10.0+((byte)SerialUSB.read()-48)/100.0+((byte)SerialUSB.read()-48)/1000.0);
-    double Ki = (double)(((byte)SerialUSB.read()-48)+((byte)SerialUSB.read()-48)/10.0+((byte)SerialUSB.read()-48)/100.0+((byte)SerialUSB.read()-48)/1000.0);
-    double Kd = (double)(((byte)SerialUSB.read()-48)+((byte)SerialUSB.read()-48)/10.0+((byte)SerialUSB.read()-48)/100.0+((byte)SerialUSB.read()-48)/1000.0);
+    double Kp = (double)(((byte)SerialUSB.read() - 48) + ((byte)SerialUSB.read() - 48) / 10.0 + ((byte)SerialUSB.read() - 48) / 100.0 + ((byte)SerialUSB.read() - 48) / 1000.0);
+    double Ki = (double)(((byte)SerialUSB.read() - 48) + ((byte)SerialUSB.read() - 48) / 10.0 + ((byte)SerialUSB.read() - 48) / 100.0 + ((byte)SerialUSB.read() - 48) / 1000.0);
+    double Kd = (double)(((byte)SerialUSB.read() - 48) + ((byte)SerialUSB.read() - 48) / 10.0 + ((byte)SerialUSB.read() - 48) / 100.0 + ((byte)SerialUSB.read() - 48) / 1000.0);
 
-    motor1.Kp = Kp;
-    motor1.Ki = Ki;
-    motor1.Kd = Kd;
+    //motor1.Kp = Kp;
+    //motor1.Ki = Ki;
+    //motor1.Kd = Kd;
 
-    Kp = (double)(((byte)SerialUSB.read()-48)+((byte)SerialUSB.read()-48)/10.0+((byte)SerialUSB.read()-48)/100.0+((byte)SerialUSB.read()-48)/1000.0);
-    Ki = (double)(((byte)SerialUSB.read()-48)+((byte)SerialUSB.read()-48)/10.0+((byte)SerialUSB.read()-48)/100.0+((byte)SerialUSB.read()-48)/1000.0);
-    Kd = (double)(((byte)SerialUSB.read()-48)+((byte)SerialUSB.read()-48)/10.0+((byte)SerialUSB.read()-48)/100.0+((byte)SerialUSB.read()-48)/1000.0);
+    Kp = (double)(((byte)SerialUSB.read() - 48) + ((byte)SerialUSB.read() - 48) / 10.0 + ((byte)SerialUSB.read() - 48) / 100.0 + ((byte)SerialUSB.read() - 48) / 1000.0);
+    Ki = (double)(((byte)SerialUSB.read() - 48) + ((byte)SerialUSB.read() - 48) / 10.0 + ((byte)SerialUSB.read() - 48) / 100.0 + ((byte)SerialUSB.read() - 48) / 1000.0);
+    Kd = (double)(((byte)SerialUSB.read() - 48) + ((byte)SerialUSB.read() - 48) / 10.0 + ((byte)SerialUSB.read() - 48) / 100.0 + ((byte)SerialUSB.read() - 48) / 1000.0);
 
-    motor2.Kp = Kp;
-    motor2.Ki = Ki;
-    motor2.Kd = Kd;
+    //motor2.Kp = Kp;
+    //motor2.Ki = Ki;
+    //motor2.Kd = Kd;
   }
 }
 
@@ -233,70 +265,70 @@ void startMeasure()
   {
     switch  (SerialUSB.read())
     {
-    case 1:
-      motor1.update(50);
-      while (millis() - time < 1000)
-      {
-        motor1.update();
-        time = millis();
-      }
+      case 1:
+        //motor1.update(50);
+        while (millis() - time < 1000)
+        {
+          //motor1.update();
+          time = millis();
+        }
 
-      motor1.update(204);
-      while (millis() - time < 1000)
-      {
-        motor1.update();
-        time = millis();
-        delay(1);
-        SerialUSB.print(motor1.getPosition());
-      }
+        //motor1.update(204);
+        while (millis() - time < 1000)
+        {
+          //motor1.update();
+          time = millis();
+          delay(1);
+          //SerialUSB.print(motor1.getPosition());
+        }
 
-      break;
+        break;
 
-    case 2:
-      motor2.update(50);
-      while (millis() - time < 1000)
-      {
-        motor2.update();
-        time = millis();
-      }
+      case 2:
+        //motor2.update(50);
+        while (millis() - time < 1000)
+        {
+          //motor2.update();
+          time = millis();
+        }
 
-      motor2.update(204);
-      while (millis() - time < 1000)
-      {
-        motor2.update();
-        time = millis();
-        delay(1);
-        SerialUSB.print(motor1.getPosition());
-      }
+        //motor2.update(204);
+        while (millis() - time < 1000)
+        {
+          //motor2.update();
+          time = millis();
+          delay(1);
+          //SerialUSB.print(//motor2.getPosition());
+        }
 
-      break;
+        break;
 
-    case 3:
-      motor1.update(50);
-      motor2.update(50);
-      while (millis() - time < 1000)
-      {
-        motor1.update();
-        motor2.update();
-        time = millis();
-      }
+      case 3:
+        //motor1.update(50);
+        //motor2.update(50);
+        while (millis() - time < 1000)
+        {
+          //motor1.update();
+          //motor2.update();
+          time = millis();
+        }
 
-      motor1.update(204);
-      motor2.update(204);
-      while (millis() - time < 1000)
-      {
-        motor1.update();
-        motor2.update();
-        time = millis();
-        delay(1);
-        SerialUSB.print(motor1.getPosition());
-        SerialUSB.print(motor2.getPosition());
-      }
+        //motor1.update(204);
+        //motor2.update(204);
+        while (millis() - time < 1000)
+        {
+          //motor1.update();
+          //motor2.update();
+          time = millis();
+          delay(1);
+          //SerialUSB.print(motor1.getPosition());
+          //SerialUSB.print(motor2.getPosition());
+        }
 
-      break;
+        break;
 
-    default:
-      break;
+      default:
+        break;
     }
   }
 }
@@ -305,7 +337,7 @@ void startMeasure()
 // Set the new sampletime two Bytes shall be sended (1 Int) //
 //////////////////////////////////////////////////////////////
 
-void setSampleTime()                                      
+void setSampleTime()
 {
   int timeout = 0;
   while (SerialUSB.available() < 2 && timeout < 500) // while there is not 24 bytes in RX buffer we wait, timeout value is 500ms
@@ -317,12 +349,12 @@ void setSampleTime()
   if (timeout < 500)
   {
     byte bst = SerialUSB.read();
-    int st = ((int)bst)<<8;
+    int st = ((int)bst) << 8;
     bst = SerialUSB.read();
-    st = st +(int)bst;
+    st = st + (int)bst;
 
-    motor1.setSampleTime(st);
-    motor2.setSampleTime(st);
+    //motor1.setSampleTime(st);
+    //motor2.setSampleTime(st);
   }
 }
 
@@ -330,10 +362,10 @@ void setSampleTime()
 // Get the current sampletime two Bytes shall be sended (1 Int) //
 //////////////////////////////////////////////////////////////////
 
-void getSampleTime()                                      
+void getSampleTime()
 {
-  SerialUSB.print(motor1.setSampleTime());
-  SerialUSB.print(motor2.setSampleTime());
+  //SerialUSB.print(motor1.getSampleTime());
+  //SerialUSB.print(motor2.getSampleTime());
 }
 
 

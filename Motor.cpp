@@ -20,12 +20,16 @@ Motor::Motor(byte id, double kp, double ki, double kd, int AnalogInput)
   {
     _Id = id;
   }
-  else id = 1;
+  else _Id = 1;
   
   //dfs.read(0);
-  Serial1.begin(9600);
+  /*if (!Serial1IsOpen)
+  {
+    Serial1.begin(9600);
+    Serial1IsOpen = true;
+  }*/
   
-  writeSpeed(0);
+  //writeSpeed(0);
   Kp = kp;
   Ki = ki;
   Kd = kd;
