@@ -39,7 +39,8 @@ Motor::Motor(byte id, double kp, double ki, double kd, int AnalogInput)
   Output = 0;
   _myPID.InitializePID(&Setpoint, &Input, &Output, Kp, Ki, Kd, DIRECT);
   _myPID.SetOutputLimits(-127,127);
-  _myPID.SetSampleTime(SAMPLINGTIME);
+  //_myPID.SetSampleTime(SAMPLINGTIME);
+  _myPID.SetMode(MANUAL);
 }
 
 void Motor::changePID(double kp, double ki, double kd)

@@ -49,7 +49,7 @@ class Motor
     double Kp, Ki, Kd;
     double Setpoint, Input, Output;
     
-  private:
+  //private:
     byte _Id;
     int _Speed;
     int _AnalogInput;

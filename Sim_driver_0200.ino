@@ -5,15 +5,15 @@
 #define RED_LED 12
 #define NULL 0
 
-double dKp = 5;
-double dKi = 0;
-double dKd = 0;
+double dKp = 2;
+double dKi = 5;
+double dKd = 1;
 
 boolean Serial1IsOpen = false;
 
 
 Motor motor1(1, dKp, dKi, dKd, A0);
-Motor motor2(2, dKp, dKi, dKd, A1);
+//Motor motor2(2, dKp, dKi, dKd, A1);
 
 
 enum state {
@@ -47,25 +47,49 @@ void setup()
   
   motor1.writeSpeed(0);
   motor1.stop();
-  motor2.writeSpeed(0);
-  motor2.stop();
-  SerialUSB.println("Welcome to the Car simulator command box ");
+  //motor2.writeSpeed(0);
+  //motor2.stop();
   pinMode(RED_LED, OUTPUT);
 
   digitalWrite(RED_LED, LOW);
   while(!SerialUSB.available());
-  motor1.writeSpeed(100);
-  motor2.writeSpeed(100);
+  SerialUSB.println("Welcome to the Car simulator command box ");
+  for (int i = 0; i<100; i++)
+  {
+    motor1.writeSpeed(i);
+  SerialUSB.println(i);
+    delay(20);
+  }
+  for (int i = 100; i>-100; i--)
+  {
+    motor1.writeSpeed(i);
+  SerialUSB.println(i);
+    delay(20);
+  }
+  for (int i = -100; i<0; i++)
+  {
+    motor1.writeSpeed(i);
+  SerialUSB.println(i);
+    delay(20);
+  }
+  //motor1.writeSpeed(100);
+  //motor2.writeSpeed(100);
+  delay(100);
+  motor1.start();
 }
 
 void loop()
 {
   
-  
+  SerialUSB.print(motor1.Output);
+  SerialUSB.print("   ");
+  SerialUSB.print(motor1.Input);
+  SerialUSB.print("   ");
 SerialUSB.println(motor1.Setpoint);
-motor1.Setpoint = 3;
-motor1.writeSpeed(10);
-delay(1000);
+motor1.Setpoint = -83;
+motor1.update();
+//motor1.writeSpeed(10);
+delay(10);
 /*
   if (SerialUSB.available())
   {
