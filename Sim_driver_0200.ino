@@ -5,15 +5,15 @@
 #define RED_LED 12
 #define NULL 0
 
-double dKp = 2;
-double dKi = 5;
-double dKd = 1;
+double dKp = 5;
+double dKi = 0.2;
+double dKd = 0;
 
 boolean Serial1IsOpen = false;
 
 
 Motor motor1(1, dKp, dKi, dKd, A0);
-//Motor motor2(2, dKp, dKi, dKd, A1);
+Motor motor2(2, dKp, dKi, dKd, A1);
 
 
 enum state {
@@ -47,14 +47,14 @@ void setup()
   
   motor1.writeSpeed(0);
   motor1.stop();
-  //motor2.writeSpeed(0);
-  //motor2.stop();
+  motor2.writeSpeed(0);
+  motor2.stop();
   pinMode(RED_LED, OUTPUT);
 
   digitalWrite(RED_LED, LOW);
   while(!SerialUSB.available());
   SerialUSB.println("Welcome to the Car simulator command box ");
-  for (int i = 0; i<100; i++)
+  /*for (int i = 0; i<100; i++)
   {
     motor1.writeSpeed(i);
   SerialUSB.println(i);
@@ -71,35 +71,26 @@ void setup()
     motor1.writeSpeed(i);
   SerialUSB.println(i);
     delay(20);
-  }
+  }*/
   //motor1.writeSpeed(100);
   //motor2.writeSpeed(100);
   delay(100);
   motor1.start();
+  motor2.start();
+  serialFlush();
 }
 
 void loop()
 {
   
-  SerialUSB.print(motor1.Output);
+  /*SerialUSB.print((int)motor1.Output);
   SerialUSB.print("   ");
   SerialUSB.print(motor1.Input);
   SerialUSB.print("   ");
-SerialUSB.println(motor1.Setpoint);
-motor1.Setpoint = -83;
-motor1.update();
-//motor1.writeSpeed(10);
-delay(10);
-/*
-  if (SerialUSB.available())
-  {
-
-    SerialUSB.println("Welcome to the Car simulator command box ");
-
-  }
+  SerialUSB.println(motor1.Setpoint);*/
 
   digitalWrite(RED_LED, HIGH);
-  delay(1000);
+  delay(10);
    if (SerialUSB.available()>=4)
    {
      while(SerialUSB.available())
@@ -107,21 +98,21 @@ delay(10);
        int FirstByte = SerialUSB.read();
        int SecondByte = SerialUSB.read();
 
-       switch (FirstByte+SecondByte)
+       switch (FirstByte)
        {
-       case 2 :
+       case 'S' :
          {
            State = SIMULATION;
 
            int Consigne1 = SerialUSB.read();
-           //motor1.Setpoint = map(Consigne1, 0, 255, 65, 190);
+           motor1.Setpoint = map(Consigne1, 0, 255, -100, 100);
            int Consigne2 = SerialUSB.read();
-           //motor2.Setpoint = map(Consigne2, 0, 255, 65, 190);
+           motor2.Setpoint = map(Consigne2, 0, 255, -100, 100);
 
            break;
          }
 
-       case 4 :
+       case 'C' :
          State = CONFIGURATION;
          configurationMode();
          break;
@@ -132,9 +123,9 @@ delay(10);
        }
      }
    }
-
-   //motor1.update();
-   //motor2.update();*/
+//SerialUSB.println(motor1.Setpoint);
+   motor1.update();
+   motor2.update();
 }
 
 void serialFlush()
